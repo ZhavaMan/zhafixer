@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
 
-#define TAM 10
+#define TAM 25
 
 typedef char tipoDato;
 
@@ -8,6 +10,11 @@ typedef struct Stack {
 	tipoDato pila[TAM];
 	int top;
 } stack;
+
+typedef struct IntStack {
+	float pila[TAM];
+	int top;
+} istack;
 
 int llena(stack *s) {
 	return s->top == (TAM - 1) ? 1 : 0;
@@ -25,8 +32,18 @@ void push(stack *s, tipoDato elem) {
 	s->pila[++s->top] = elem;
 }
 
+void pushi(istack *s, float elem) {
+	s->pila[++s->top] = elem;
+}
+
 tipoDato pop(stack *s) {
 	tipoDato tmp = s->pila[s->top];
+	s->top--;
+	return tmp;
+}
+
+float popi(istack *s) {
+	float tmp = s->pila[s->top];
 	s->top--;
 	return tmp;
 }
@@ -35,10 +52,22 @@ void inicializar(stack *s) {
 	s->top = -1;
 }
 
+void inicializari(istack *s) {
+	s->top = -1;
+}
+
 void imprime(stack *s) {
 	for (int i = s->top; i > -1; i--)
 	{
 		printf("%c", s->pila[i]);
+	}
+	printf("\n");
+}
+
+void imprimei(istack *s) {
+	for (int i = s->top; i > -1; i--)
+	{
+		printf("%.1f ", s->pila[i]);
 	}
 	printf("\n");
 }
@@ -78,21 +107,42 @@ int clasificador(char element) {
 }
 
 int main() {
-	int i = 0, f = 0, g = 0, p = 0, q = 0;
-	char input[30], e = ' ', w = ' ';
+	int i = 0,
+		f = 0,
+		g = 0,
+		p = 0,
+		q = 0,
+		m = 0;
+
+	float a = 0,
+		b = 0,
+		c = 0,
+		u = 0;
+
+	char input[30],
+		 e = ' ',
+		 w = ' ',
+		 n = ' ',
+		 v = ' ';
+
 	stack infix,
 		operators,
 		postfix,
 		tmpg;
+
+	istack operands;
 
 	inicializar(&infix);
 	inicializar(&operators);
 	inicializar(&postfix);
 	inicializar(&tmpg);
 
+	inicializari(&operands);
+
 	printf("Infix expression: ");
 	scanf("%s", input);
 
+	// string -> pila
 	while (input[i] != '\0') {
 		push(&infix, input[i]);
 		i++;
@@ -100,6 +150,7 @@ int main() {
 
 	invierte(&infix);
 
+	// infix -> postfix
 	while (!vacia(&infix)) {
 		e = pop(&infix);
 		f = clasificador(e);
@@ -146,7 +197,44 @@ int main() {
 	invierte(&postfix);
 	printf("Postfix expression: ");
 	imprime(&postfix);
-	printf("\n");
+
+	// Postfix evaluation
+	while(!vacia(&postfix)) {
+		n = pop(&postfix);
+		m = clasificador(n);
+
+		if (!m) {
+			u = atof(&n);
+			pushi(&operands, u);
+		} else if (m) {
+			b = popi(&operands);
+			a = popi(&operands);
+
+			if (m == 3) {
+				c = pow(a, b);
+				pushi(&operands, c);
+			} else if (m == 2) {
+				if (n == '*') {
+					c = a * b;
+					pushi(&operands, c);
+				} else if (n == '/') {
+					c = a / b;
+					pushi(&operands, c);
+				}
+			} else {
+				if (n == '+') {
+					c = a + b;
+					pushi(&operands, c);
+				} else if (n == '-') {
+					c = a - b;
+					pushi(&operands, c);
+				}
+			}
+		}
+	}
+
+	printf("Postfix evaluation: ");
+	imprimei(&operands);
 
 	return 0;
 }
