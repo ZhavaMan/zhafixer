@@ -2,6 +2,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+// Hola soy otro desarrollador
+
 #define TAM 25
 
 typedef char tipoDato;
